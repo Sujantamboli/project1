@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin
 )
+
 ###############################################################
 # TOPIC: customizing authentication and user model in django  #
 ###############################################################
@@ -25,6 +26,8 @@ additional notes ::
 
 
 """
+
+
 ###############################################################
 
 
@@ -65,7 +68,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email=None, password=None, **extra_fields):
+    def create_superuser(self, email=None, password=None):
         """
         Whenever we call `python manage.py createsuperuser`, django looks for
         this method.
@@ -73,8 +76,7 @@ class UserManager(BaseUserManager):
         Args:
             email:
             password:
-            **extra_fields:
-
+            # **extra_fields:
         Returns:
 
         """
@@ -98,4 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     objects = UserManager()
 
-    USERNAME_FIELD = "email"  # overrides the default user field from base class
+    USERNAME_FIELD = "email"
+
+    # overrides the default user field from base class

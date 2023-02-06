@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 
 class ModelTests(TestCase):
     """testing of models"""
-
     def test_create_user_with_email_as_default(self):
         """test creating a user with just email field and password alone"""
 
