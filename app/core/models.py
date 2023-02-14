@@ -1,5 +1,5 @@
 from django.db import models  # noqa
-
+from django.conf import settings
 # Create your models here.
 
 
@@ -103,3 +103,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
 
     # overrides the default user field from base class
+
+
+class Portal(models.Model):
+    """Portal object"""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=250, unique=True)
+    description = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.name
