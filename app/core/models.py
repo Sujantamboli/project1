@@ -1,12 +1,14 @@
 from django.db import models  # noqa
+from django.utils import timezone
 from django.conf import settings
+
 # Create your models here.
 
 
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
-    PermissionsMixin
+    PermissionsMixin,
 )
 
 ###############################################################
@@ -26,8 +28,6 @@ additional notes ::
 
 
 """
-
-
 ###############################################################
 
 
@@ -68,7 +68,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email=None, password=None):
+    def create_superuser(self, email=None, password=None, **extra_fields):
         """
         Whenever we call `python manage.py createsuperuser`, django looks for
         this method.
@@ -76,7 +76,8 @@ class UserManager(BaseUserManager):
         Args:
             email:
             password:
-            # **extra_fields:
+            **extra_fields:
+
         Returns:
 
         """
@@ -100,14 +101,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
-
-    # overrides the default user field from base class
+    USERNAME_FIELD = "email"  # overrides the default user field from base class
 
 
 class Portal(models.Model):
-    """Portal object"""
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
@@ -117,3 +114,53 @@ class Portal(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class JobDescription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    role = models.CharField(max_length=250)
+    description_text = models.CharField(max_length=250)
+    pub_date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.role
+
+
+class JobTitle(models.Model):
+    """
+    JobTitle will have association with many portals
+
+    `JobTitle` <--> `User` (one-to-many relationship)
+    `JobTitle` <--> `Portal`   (one-to-many relationship)
+    `JobTitle`  <--> `JobDescription` (one-to-one relationship)
+
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=250)
+    last_updated = models.DateTimeField(default=timezone.now)
+    job_description = models.OneToOneField(
+        "JobDescription", on_delete=models.CASCADE
+    )
+    portal = models.ForeignKey(Portal, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title + f"( {self.portal} )"
+
+
+class Applicant(User):
+    """Derive from user model"""
+
+    is_applicant = models.BooleanField(default=True)
+    applied_for = models.ForeignKey(JobTitle, on_delete=models.CASCADE)
+    cover_letter = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.name
+
